@@ -18,8 +18,8 @@ jobs:
       - name: Clone Cloud Manager repo
         env:
           CM_REPO_URL: ${{ secrets.CM_REPO_URL }}
-          CM_USER: ${{ secrets.CM_USER }}
-          CM_PASSWORD: ${{ secrets.CM_PASSWORD }}
+          CM_USER: ${{ secrets.CM_GIT_USER }}
+          CM_PASSWORD: ${{ secrets.CM_GIT_PASS }}
         run: |
           git clone "https://${CM_USER}:${CM_PASSWORD}@${CM_REPO_URL#https://}" cmrepo
 
