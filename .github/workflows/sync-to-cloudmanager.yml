@@ -1,0 +1,54 @@
+name: Sync to Cloud Manager Repo
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone Cloud Manager repo
+        env:
+          CM_REPO_URL: ${{ secrets.CM_REPO_URL }}
+          CM_USER: ${{ secrets.CM_USER }}
+          CM_PASSWORD: ${{ secrets.CM_PASSWORD }}
+        run: |
+          git clone "https://${CM_USER}:${CM_PASSWORD}@${CM_REPO_URL#https://}" cmrepo
+
+      - name: Sync into Cloud Manager repo folder
+        env:
+          SYNC_DIR: platform
+        run: |
+          mkdir -p "cmrepo/${SYNC_DIR}"
+
+          rsync -a --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude "**/target" \
+            --exclude "**/node_modules" \
+            --exclude "**/.DS_Store" \
+            ./ "cmrepo/${SYNC_DIR}/"
+
+      - name: Commit & push changes
+        env:
+          SYNC_DIR: platform
+        run: |
+          cd cmrepo
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add -A
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Sync ${SYNC_DIR} from ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
+            git push origin main
+          else
+            echo "No changes to sync."
+          fi
