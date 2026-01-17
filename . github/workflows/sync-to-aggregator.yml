@@ -1,0 +1,38 @@
+name: Sync platform to aggregator
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout platform
+        uses: actions/checkout@v4
+
+      - name: Checkout aggregator
+        uses: actions/checkout@v4
+        with:
+          repository: ApurvaGilke/multi-tenant-poc
+          path: multi-tenant-poc
+          token: ${{ secrets.AGGREGATOR_PUSH_TOKEN }}
+
+      - name: Copy platform into aggregator
+        run: |
+          rm -rf multi-tenant-poc/platform
+          mkdir -p multi-tenant-poc/platform
+          cp -R ./* multi-tenant-poc/platform/
+
+      - name: Commit and push
+        working-directory: multi-tenant-poc
+        run: |
+          git config user.name "CI Sync Bot"
+          git config user.email "ci-sync@example.com"
+          git add platform
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Sync platform from ${GITHUB_SHA}"
+            git push origin main
+          fi
