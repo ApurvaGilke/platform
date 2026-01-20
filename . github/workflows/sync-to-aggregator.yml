@@ -1,4 +1,4 @@
-name: Sync platform to aggregator
+name: Sync platform to aggregator workflow
 
 on:
   push:
