@@ -1,4 +1,4 @@
-name: Notify aggregator
+name: Notify aggregator workflow
 
 on:
   push:
